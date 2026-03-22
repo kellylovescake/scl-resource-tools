@@ -149,6 +149,46 @@ function parseIllExport(rawText: string): ParseResult {
         }
       }
 
+      // ── ILS format without __bold__ markers ──────────────────────────────
+      // When staff copy the skill output from a rendered markdown interface
+      // (e.g. Claude's chat UI), the __Title.__ markers are stripped and the
+      // line arrives as plain text:
+      //   "Coding for kids in easy steps :. McGrath, Mike"     ← :. variant
+      //   "Coding projects in Scratch. Woodcock, Jon"          ← plain variant
+      //
+      // Two passes:
+      //   1. Look for " :. " (ILS truncated-subtitle separator)
+      //   2. Split on the LAST ". " (period–space), which separates the
+      //      title (or subtitle) from the author in this format.
+      //      lastIndexOf is used so that "Dr. Seuss. Smith, John"
+      //      correctly splits as title="Dr. Seuss", author="Smith, John"
+      //      rather than splitting at the first period.
+
+      if (!matched) {
+        const colonDotSplit = line.match(/^(.+?)\s*:\.\s+(.+)/);
+        if (colonDotSplit) {
+          title  = colonDotSplit[1].trim();
+          author = colonDotSplit[2].trim();
+          matched = true;
+        }
+      }
+
+      if (!matched) {
+        const lastPeriodSpace = line.lastIndexOf(". ");
+        if (lastPeriodSpace > 0) {
+          const potentialTitle  = line.slice(0, lastPeriodSpace).trim();
+          const potentialAuthor = line.slice(lastPeriodSpace + 2).trim();
+          // Guard: if the part before ". " is just a number, it's a numbered
+          // list item ("1. Title") not a "Title. Author" split — skip.
+          const looksLikeNumber = /^\d+$/.test(potentialTitle);
+          if (potentialTitle && potentialAuthor && !looksLikeNumber) {
+            title  = potentialTitle;
+            author = potentialAuthor;
+            matched = true;
+          }
+        }
+      }
+
       if (!matched) {
         // Last resort: strip leading number and use entire line as title
         title = line.replace(/^\d+[.)]\s*/, "").trim();

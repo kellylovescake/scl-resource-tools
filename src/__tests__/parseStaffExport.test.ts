@@ -169,6 +169,55 @@ describe("parseStaffExport — items with missing optional fields", () => {
   });
 });
 
+// ── ILS format without __bold__ markers ──────────────────────────────────────
+// When staff copy the skill output from a rendered markdown interface, the
+// __Title.__ markers are stripped. The parser must handle both variants.
+
+describe("parseStaffExport — rendered format without __bold__ markers", () => {
+  test("parses title and author when :. separator is present", () => {
+    const input =
+      "* Coding for kids in easy steps :. McGrath, Mike. Collection: Adult Non-Fiction, Call #: 005 M";
+    const { items } = parseStaffExport(input);
+    expect(items[0].title).toBe("Coding for kids in easy steps");
+    expect(items[0].author).toBe("McGrath, Mike");
+    expect(items[0].callNumber).toBe("005 M");
+    expect(items[0].collection).toBe("Adult Non-Fiction");
+  });
+
+  test("parses title and author for plain . separator (no subtitle)", () => {
+    const input =
+      "* Coding projects in Scratch. Woodcock, Jon. Collection: Adult Non-Fiction, Call #: 005 W";
+    const { items } = parseStaffExport(input);
+    expect(items[0].title).toBe("Coding projects in Scratch");
+    expect(items[0].author).toBe("Woodcock, Jon");
+  });
+
+  test("parses title and author when subtitle is spelled out", () => {
+    const input =
+      "* Coding for children and young adults in libraries : a practical guide for librarians. Harrop, Wendy. Collection: Adult Non-Fiction, Call #: 005.1071 H";
+    const { items } = parseStaffExport(input);
+    expect(items[0].title).toBe(
+      "Coding for children and young adults in libraries : a practical guide for librarians"
+    );
+    expect(items[0].author).toBe("Harrop, Wendy");
+  });
+
+  test("handles a multi-item rendered list with mixed formats", () => {
+    const input = [
+      "* Coding for kids in easy steps :. McGrath, Mike. Collection: Adult Non-Fiction, Call #: 005 M",
+      "* Coding projects in Scratch. Woodcock, Jon. Collection: Adult Non-Fiction, Call #: 005 W",
+      "* Girls who code : learn to code and change the world. Saujani, Reshma. Collection: Juvenile Non-Fiction, Call #: J 005.1023 S",
+    ].join("\n");
+    const { items } = parseStaffExport(input);
+    expect(items).toHaveLength(3);
+    expect(items[0].title).toBe("Coding for kids in easy steps");
+    expect(items[1].title).toBe("Coding projects in Scratch");
+    expect(items[2].title).toBe(
+      "Girls who code : learn to code and change the world"
+    );
+  });
+});
+
 // ── Warnings ─────────────────────────────────────────────────────────────────
 
 describe("parseStaffExport — no warnings for valid input", () => {
