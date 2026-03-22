@@ -238,8 +238,7 @@ describe("parseStaffExport — ILS line-break joining", () => {
     expect(items[0].callNumber).toBe("J 005.1023 S");
   });
 
-  test("does not merge two separate items that happen to lack Call #: on one line", () => {
-    // Each item has its own Call #: so they should remain separate
+  test("does not merge two separate items (bullet-prefixed format)", () => {
     const input = [
       "* __Book One.__ Author One. Collection: Easy, Call #: E ONE",
       "* __Book Two.__ Author Two. Collection: Easy, Call #: E TWO",
@@ -248,6 +247,26 @@ describe("parseStaffExport — ILS line-break joining", () => {
     expect(items).toHaveLength(2);
     expect(items[0].title).toBe("Book One");
     expect(items[1].title).toBe("Book Two");
+  });
+
+  test("does not merge separate items in rendered format (no * bullets)", () => {
+    // Exact format from real ILS copy-paste without __bold__ or * prefixes.
+    // Items are newline-separated; each ends with "Call #:".
+    const input = [
+      "Coding for kids in easy steps :. McGrath, Mike. Collection: Adult Non-Fiction, Call #: 005 M",
+      "Coding projects in Scratch. Woodcock, Jon. Collection: Adult Non-Fiction, Call #: 005 W",
+      "Girls who code : learn to code and change the w",
+      "orld. Saujani, Reshma. Collection: Juvenile Non-Fiction, Call #: J 005.1023 S",
+    ].join("\n");
+    const { items } = parseStaffExport(input);
+    expect(items).toHaveLength(3);
+    expect(items[0].title).toBe("Coding for kids in easy steps");
+    expect(items[1].title).toBe("Coding projects in Scratch");
+    expect(items[2].title).toBe(
+      "Girls who code : learn to code and change the world"
+    );
+    expect(items[2].author).toBe("Saujani, Reshma");
+    expect(items[2].callNumber).toBe("J 005.1023 S");
   });
 });
 

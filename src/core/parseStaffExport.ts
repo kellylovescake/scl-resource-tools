@@ -96,33 +96,38 @@ export function parseStaffExport(rawText: string): ParseResult {
 function joinBrokenLines(rawText: string): string {
   const lines = rawText.split("\n");
   const out: string[] = [];
+  // Start as "complete" so the very first non-blank line is always a new item.
+  let prevComplete = true;
 
   for (const line of lines) {
     const trimmed = line.trim();
 
-    // Blank lines pass through unchanged (they act as item separators)
+    // Blank lines always act as item separators.
     if (!trimmed) {
+      out.push(line);
+      prevComplete = true;
+      continue;
+    }
+
+    // Comment lines pass through without affecting the completion state.
+    if (trimmed.startsWith("#")) {
       out.push(line);
       continue;
     }
 
-    // Lines that start a new item — bullet prefix, comment, or numbered list entry
-    // A continuation can never start a new item, even if it later contains "Call #:".
-    const isNewItem =
-      trimmed.startsWith("#") ||
-      trimmed.startsWith("*") ||
-      /^\d+[.)]\s/.test(trimmed); // numbered list: "1. " or "1) "
-
-    if (isNewItem || out.length === 0) {
+    if (prevComplete || out.length === 0) {
+      // Previous item was complete (ended with "Call #:") or this is the
+      // very first line — always start a new item.
       out.push(line);
     } else {
-      // This line is a continuation of the previous non-blank line.
-      // If it starts with a lowercase letter it is a mid-word break → no space.
-      // Otherwise join with a space.
-      const prev = out[out.length - 1];
+      // Previous item is incomplete — this line is a continuation.
+      // No space for mid-word breaks (starts with lowercase); space otherwise.
       const sep = /^[a-z]/.test(trimmed) ? "" : " ";
-      out[out.length - 1] = prev + sep + trimmed;
+      out[out.length - 1] = out[out.length - 1] + sep + trimmed;
     }
+
+    // An item is complete when its line contains "Call #:".
+    prevComplete = trimmed.includes("Call #:");
   }
 
   return out.join("\n");
