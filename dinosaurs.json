@@ -1,0 +1,87 @@
+{
+  "title": "Dinosaur Reference",
+  "ageGroup": "for Children",
+  "preparedBy": "Kelly Waddell, MLIS",
+  "dateStr": "03/20/2026",
+  "digitalResources": [],
+  "outputPath": "dinosaurs_output.docx",
+  "books": [
+    {
+      "title": "Velociraptor",
+      "author": "Lennie, Charles",
+      "isbn": "9781629700274",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Flying Guy Presents: Dinosaurs",
+      "author": "Arnold, Tedd",
+      "isbn": "9780606351942",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Ask Me About Dinosaurs and Prehistoric Animals",
+      "author": "",
+      "isbn": "9780871975829",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Dinosaur: Facts and Figures",
+      "author": "Molina-Pérez, Rubén",
+      "isbn": "9780691180311",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "The Big Golden Book of Dinosaurs",
+      "author": "Bakker, Robert T.",
+      "isbn": "9780375859588",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Firefly Encyclopedia of Dinosaurs and Prehistoric Animals",
+      "author": "",
+      "isbn": "9781770854604",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Boy, Were We Wrong About Dinosaurs!",
+      "author": "Kudlinski, Kathleen V.",
+      "isbn": "9780525469780",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "National Geographic Dinosaurs",
+      "author": "Barrett, Paul M.",
+      "isbn": "9780792282242",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "When Bugs Were Big, Plants Were Strange, and Tetrapods Stalked the Earth",
+      "author": "Bonner, Hannah",
+      "isbn": "9780792263265",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "Did Dinosaurs Live in Your Backyard?",
+      "author": "Berger, Melvin",
+      "isbn": "9780590130851",
+      "callNumber": "",
+      "collection": ""
+    },
+    {
+      "title": "The Dinosaur Encyclopedia",
+      "author": "Benton, M. J.",
+      "isbn": "9780671510466",
+      "callNumber": "",
+      "collection": ""
+    }
+  ]
+}

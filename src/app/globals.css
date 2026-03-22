@@ -1,0 +1,41 @@
+/*
+ * globals.css
+ *
+ * Global CSS for SCL Resource Tools.
+ * Tailwind base styles are imported here.
+ * Keep this file minimal — prefer Tailwind utility classes in components.
+ *
+ * SAFE TO EDIT: Add global resets or base styles here if needed.
+ * Do NOT add component-specific styles here — put those in the component files.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base overrides ──────────────────────────────────────────────────────── */
+
+@layer base {
+  body {
+    @apply bg-white text-scl-dark antialiased;
+  }
+
+  /* Ensure focus rings are visible for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-scl-orange;
+  }
+}
+
+/* ── Utility layer additions ─────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Orange rule — matches the SCL brand separator used in DOCX output */
+  .scl-rule {
+    @apply border-b-2 border-scl-orange;
+  }
+
+  /* Light rule — matches the light separator used in DOCX output */
+  .scl-light-rule {
+    @apply border-b border-scl-rule;
+  }
+}

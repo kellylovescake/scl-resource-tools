@@ -1,0 +1,17 @@
+﻿{
+  "title": "Dinosaur Reference",
+  "ageGroup": "for Children",
+  "preparedBy": "Kelly Waddell, MLIS",
+  "dateStr": "03/20/2026",
+  "books": [
+    {
+      "title": "The Big Golden Book of Dinosaurs",
+      "author": "Bakker, Robert T.",
+      "isbn": "9780375859588",
+      "callNumber": "567.9 B",
+      "collection": ""
+    }
+  ],
+  "digitalResources": [],
+  "outputPath": "test_output.docx"
+}
