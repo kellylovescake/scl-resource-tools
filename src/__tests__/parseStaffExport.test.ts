@@ -218,6 +218,39 @@ describe("parseStaffExport — rendered format without __bold__ markers", () => 
   });
 });
 
+// ── ILS line-break joining ────────────────────────────────────────────────────
+// The ILS has a column-width limit that inserts hard line breaks mid-word.
+// joinBrokenLines() must reassemble the item before the title regex runs.
+
+describe("parseStaffExport — ILS line-break joining", () => {
+  test("joins a mid-word line break (e.g. 'w\\norld') into one item", () => {
+    // Simulates the exact raw copy-paste from the ILS that broke the merge:
+    // "Girls who code : learn to code and change the w\norld. Saujani, Reshma..."
+    const input =
+      "* Girls who code : learn to code and change the w\norld. Saujani, Reshma. Collection: Juvenile Non-Fiction, Call #: J 005.1023 S";
+    const { items, warnings } = parseStaffExport(input);
+    expect(warnings).toHaveLength(0);
+    expect(items).toHaveLength(1);
+    expect(items[0].title).toBe(
+      "Girls who code : learn to code and change the world"
+    );
+    expect(items[0].author).toBe("Saujani, Reshma");
+    expect(items[0].callNumber).toBe("J 005.1023 S");
+  });
+
+  test("does not merge two separate items that happen to lack Call #: on one line", () => {
+    // Each item has its own Call #: so they should remain separate
+    const input = [
+      "* __Book One.__ Author One. Collection: Easy, Call #: E ONE",
+      "* __Book Two.__ Author Two. Collection: Easy, Call #: E TWO",
+    ].join("\n");
+    const { items } = parseStaffExport(input);
+    expect(items).toHaveLength(2);
+    expect(items[0].title).toBe("Book One");
+    expect(items[1].title).toBe("Book Two");
+  });
+});
+
 // ── Warnings ─────────────────────────────────────────────────────────────────
 
 describe("parseStaffExport — no warnings for valid input", () => {

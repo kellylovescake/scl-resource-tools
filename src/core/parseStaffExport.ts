@@ -74,6 +74,60 @@ export function parseStaffExport(rawText: string): ParseResult {
   return parseIllExport(rawText);
 }
 
+// ── Line-break joining ────────────────────────────────────────────────────────
+
+/**
+ * joinBrokenLines(rawText)
+ *
+ * Some ILS exports (and copy-pastes from rendered interfaces) insert hard
+ * line breaks when a line exceeds the ILS's column-width limit. For example:
+ *   "Girls who code : learn to code and change the w\norld. Saujani, Reshma..."
+ * The word "world" is broken across two lines.
+ *
+ * Strategy: every complete ILS item ends with "Call #: XXX". A line that does
+ * NOT contain "Call #:" is either a blank line (left alone) or a continuation
+ * of the previous item (joined to it). Continuation lines that start with a
+ * lowercase letter are mid-word breaks — joined with no separator. All others
+ * are joined with a single space.
+ *
+ * Lines that start with "#" (comments) or "*" (bullet prefix) are always
+ * treated as new items, not continuations.
+ */
+function joinBrokenLines(rawText: string): string {
+  const lines = rawText.split("\n");
+  const out: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Blank lines pass through unchanged (they act as item separators)
+    if (!trimmed) {
+      out.push(line);
+      continue;
+    }
+
+    // Lines that start a new item — bullet prefix, comment, or numbered list entry
+    // A continuation can never start a new item, even if it later contains "Call #:".
+    const isNewItem =
+      trimmed.startsWith("#") ||
+      trimmed.startsWith("*") ||
+      /^\d+[.)]\s/.test(trimmed); // numbered list: "1. " or "1) "
+
+    if (isNewItem || out.length === 0) {
+      out.push(line);
+    } else {
+      // This line is a continuation of the previous non-blank line.
+      // If it starts with a lowercase letter it is a mid-word break → no space.
+      // Otherwise join with a space.
+      const prev = out[out.length - 1];
+      const sep = /^[a-z]/.test(trimmed) ? "" : " ";
+      out[out.length - 1] = prev + sep + trimmed;
+    }
+  }
+
+  return out.join("\n");
+}
+
 // ── ILL export parser ─────────────────────────────────────────────────────────
 
 /**
@@ -99,7 +153,20 @@ function parseIllExport(rawText: string): ParseResult {
   const items: BibliographyItem[] = [];
   const warnings: ParseWarning[] = [];
 
-  const lines = rawText.trim().split("\n");
+  // Pre-process: join lines that were broken mid-item by the ILS's line-length limit.
+  //
+  // WHY: Some ILS exports (and copy-pastes from rendered interfaces) insert hard
+  // line breaks when a line exceeds a certain column width. For example:
+  //   "Girls who code : learn to code and change the w\norld. Saujani, Reshma..."
+  // The word "world" is broken across two lines. This causes the parser to see
+  // 9 lines instead of 8, failing the count check before any title matching happens.
+  //
+  // HOW: Every complete ILS item ends with "Call #: XXX". A line that does NOT
+  // contain "Call #:" is either a continuation of the previous item or a blank line.
+  // We join it to the previous line, using no separator when the continuation
+  // starts with a lowercase letter (mid-word break) or a space otherwise.
+  const joined = joinBrokenLines(rawText.trim());
+  const lines = joined.split("\n");
 
   lines.forEach((rawLine, lineIndex) => {
     let line = rawLine.trim();
