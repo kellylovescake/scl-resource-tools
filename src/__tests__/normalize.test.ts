@@ -71,10 +71,25 @@ describe("normalizeTitle", () => {
   });
 
   test("produces identical keys for both sides of a common merge pair", () => {
-    // Staff export title vs RSS title — these are the most common artifact patterns
+    // Staff export title vs RSS title — trailing colon artifact
     const staffTitle = "The Big Golden Book of Dinosaurs";
     const rssTitle = "The Big Golden Book of Dinosaurs :";
     expect(normalizeTitle(staffTitle)).toBe(normalizeTitle(rssTitle));
+  });
+
+  test("strips MARC subtitle separator and full subtitle for merge matching", () => {
+    // Staff export truncates subtitle: "Coding for kids in easy steps :."
+    // RSS returns full MARC title:    "Coding for kids in easy steps : a step-by-step visual guide"
+    // Both must normalize to the same key for the cover bibliography merge to succeed.
+    const staffTitle = "Coding for kids in easy steps";
+    const rssTitle   = "Coding for kids in easy steps : a step-by-step visual guide";
+    expect(normalizeTitle(staffTitle)).toBe(normalizeTitle(rssTitle));
+    expect(normalizeTitle(staffTitle)).toBe("coding for kids in easy steps");
+  });
+
+  test("does not strip colon that is part of the main title (no space before)", () => {
+    // "Flying Guy Presents: Dinosaurs" — colon with no space before it is NOT MARC subtitle
+    expect(normalizeTitle("Flying Guy Presents: Dinosaurs")).toBe("flying guy presents: dinosaurs");
   });
 
   test("handles empty string without throwing", () => {

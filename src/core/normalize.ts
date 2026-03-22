@@ -51,6 +51,23 @@ export function normalizeTitle(raw: string): string {
     .trim()
     // Strip leading articles (word boundary-aware)
     .replace(/^(the|a|an)\s+/i, "")
+    // Strip MARC subtitle separator (" : ") and everything after it.
+    //
+    // WHY: The staff export sometimes truncates subtitles, showing
+    //   "Coding for kids in easy steps :."   (no subtitle text)
+    // while the RSS feed returns the full MARC title:
+    //   "Coding for kids in easy steps : a step-by-step visual guide"
+    //
+    // Stripping from " : " onward makes both sides normalize to the
+    // same key ("coding for kids in easy steps") so the merge succeeds.
+    //
+    // SAFE: MARC uses " : " (space–colon–space) as the subtitle separator.
+    // A colon with no space before it (e.g. "Flying Guy Presents: Dinosaurs")
+    // is not a subtitle separator and is NOT stripped by this rule.
+    //
+    // DECISION LOG: added 2026-03-22 after first real-world cover bibliography
+    // failed because RSS titles included full subtitles the staff export truncated.
+    .replace(/ : .+$/, "")
     // Strip trailing punctuation artifacts from RSS titles and ILS exports
     // e.g. "Title :" → "title", "Title." → "title"
     .replace(/[\s:./]+$/, "")
