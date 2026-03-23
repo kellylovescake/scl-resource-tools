@@ -120,6 +120,11 @@ export async function POST(request: NextRequest) {
         mergeErrors: mergeResult.errors,
         staffCount:  mergeResult.staffCount,
         rssCount:    mergeResult.rssCount,
+        // TEMPORARY DEBUG — remove after diagnosing merge failure
+        _debug: {
+          parserVersion: "v5-debug",
+          firstStaffItem: staffParseResult.items[0] ?? null,
+        },
       },
       { status: 409 },
     );
