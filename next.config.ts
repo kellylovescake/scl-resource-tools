@@ -31,6 +31,11 @@ const nextConfig: NextConfig = {
   // Allow server-side code to use Node.js built-ins (needed for docx + fs in API routes)
   // This is the default for App Router API routes — listed here for clarity.
   serverExternalPackages: [],
+
+  // Force a unique build ID on every Vercel deployment so the build cache is
+  // never stale. Without this, Vercel reuses compiled serverless-function
+  // bundles across deploys even when the source has changed.
+  generateBuildId: async () => `build-${Date.now()}`,
 };
 
 export default nextConfig;
