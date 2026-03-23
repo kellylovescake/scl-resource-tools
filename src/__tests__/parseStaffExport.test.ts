@@ -268,6 +268,25 @@ describe("parseStaffExport — ILS line-break joining", () => {
     expect(items[2].author).toBe("Saujani, Reshma");
     expect(items[2].callNumber).toBe("J 005.1023 S");
   });
+
+  test("uses call number's author-initial letter to split title from author", () => {
+    // ILS call numbers always end with the first letter of the author's last
+    // name. When ":." is absent, this letter is the reliable split signal.
+    //   "005 W" → author starts with W → ". Woodcock" is the split point
+    //   "J 005 H" → author starts with H → ". Highland" is the split point
+    const input = [
+      "Coding projects in Scratch. Woodcock, Jon. Collection: Adult Non-Fiction, Call #: 005 W",
+      "Coding for kids scratch : learning coding skills, create fun games and master scratch. Highland, Matthew. Collection: Juvenile Non-Fiction, Call #: J 005 H",
+    ].join("\n");
+    const { items } = parseStaffExport(input);
+    expect(items).toHaveLength(2);
+    expect(items[0].title).toBe("Coding projects in Scratch");
+    expect(items[0].author).toBe("Woodcock, Jon");
+    expect(items[1].title).toBe(
+      "Coding for kids scratch : learning coding skills, create fun games and master scratch"
+    );
+    expect(items[1].author).toBe("Highland, Matthew");
+  });
 });
 
 // ── Warnings ─────────────────────────────────────────────────────────────────

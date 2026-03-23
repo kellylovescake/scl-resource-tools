@@ -236,6 +236,7 @@ function parseIllExport(rawText: string): ParseResult {
       //      correctly splits as title="Dr. Seuss", author="Smith, John"
       //      rather than splitting at the first period.
 
+      // Pass 1: Look for " :. " (ILS truncated-subtitle separator)
       if (!matched) {
         const colonDotSplit = line.match(/^(.+?)\s*:\.\s+(.+)/);
         if (colonDotSplit) {
@@ -245,6 +246,32 @@ function parseIllExport(rawText: string): ParseResult {
         }
       }
 
+      // Pass 2: Use the call number's author-initial letter to locate ". Author"
+      // ILS call numbers always end with the first letter of the author's last
+      // name (e.g. "005 M" → McGrath, "J 005 H" → Highland). Using that letter
+      // as an anchor makes the split more precise than a bare ". " search.
+      //   "Coding for kids in easy steps :. McGrath, Mike"  callLetter=M
+      //     lastIndexOf(". M") → ". McGrath" → title / author split ✓
+      //   "Coding projects in Scratch. Woodcock, Jon"       callLetter=W
+      //     lastIndexOf(". W") → ". Woodcock" → title / author split ✓
+      if (!matched && callNumber) {
+        const callLetter = callNumber.slice(-1).toUpperCase();
+        if (/[A-Z]/.test(callLetter)) {
+          const searchStr = `. ${callLetter}`;
+          const idx = line.lastIndexOf(searchStr);
+          if (idx > 0) {
+            const potentialTitle  = line.slice(0, idx).trim();
+            const potentialAuthor = line.slice(idx + 2).trim();
+            if (potentialTitle && potentialAuthor) {
+              title  = potentialTitle;
+              author = potentialAuthor;
+              matched = true;
+            }
+          }
+        }
+      }
+
+      // Pass 3: Split on LAST ". " (period–space) as a final fallback.
       if (!matched) {
         const lastPeriodSpace = line.lastIndexOf(". ");
         if (lastPeriodSpace > 0) {
