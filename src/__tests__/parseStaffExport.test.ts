@@ -287,6 +287,18 @@ describe("parseStaffExport — ILS line-break joining", () => {
     );
     expect(items[1].author).toBe("Highland, Matthew");
   });
+
+  test("skips call-letter split when last call number token is not a single letter", () => {
+    // If the call number ends with a full name (BROWN), publisher code, or
+    // a numeric-only Cutter, Pass 2 should not fire — fall through to Pass 3.
+    const input =
+      "My great book. Brown, Alice. Collection: Adult Non-Fiction, Call #: 005 BROWN";
+    const { items } = parseStaffExport(input);
+    expect(items).toHaveLength(1);
+    // Pass 3 (lastPeriodSpace) should still correctly split title from author.
+    expect(items[0].title).toBe("My great book");
+    expect(items[0].author).toBe("Brown, Alice");
+  });
 });
 
 // ── Warnings ─────────────────────────────────────────────────────────────────

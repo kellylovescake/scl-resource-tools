@@ -247,17 +247,20 @@ function parseIllExport(rawText: string): ParseResult {
       }
 
       // Pass 2: Use the call number's author-initial letter to locate ". Author"
-      // ILS call numbers always end with the first letter of the author's last
-      // name (e.g. "005 M" → McGrath, "J 005 H" → Highland). Using that letter
-      // as an anchor makes the split more precise than a bare ". " search.
-      //   "Coding for kids in easy steps :. McGrath, Mike"  callLetter=M
-      //     lastIndexOf(". M") → ". McGrath" → title / author split ✓
-      //   "Coding projects in Scratch. Woodcock, Jon"       callLetter=W
-      //     lastIndexOf(". W") → ". Woodcock" → title / author split ✓
+      // When the last token of the call number is exactly one letter, it is the
+      // first letter of the author's last name (standard ILS Cutter convention).
+      //   "005 M"       → lastToken "M" → single letter ✓ → look for ". M"
+      //   "J 005 H"     → lastToken "H" → single letter ✓ → look for ". H"
+      //   "005 BROWN"   → lastToken "BROWN" → multi-char  → skip (not reliable)
+      //   "J E BROWN"   → lastToken "BROWN" → multi-char  → skip
+      //   "005.1071"    → lastToken "005.1071" → no letter → skip
+      // Only fires when the last token is exactly one uppercase letter, so it
+      // is safely ignored for publisher codes, full-name Cutters, and numeric-only
+      // call numbers — those fall through to Pass 3.
       if (!matched && callNumber) {
-        const callLetter = callNumber.slice(-1).toUpperCase();
-        if (/[A-Z]/.test(callLetter)) {
-          const searchStr = `. ${callLetter}`;
+        const lastToken = callNumber.trim().split(/\s+/).pop() ?? "";
+        if (/^[A-Z]$/.test(lastToken)) {
+          const searchStr = `. ${lastToken}`;
           const idx = line.lastIndexOf(searchStr);
           if (idx > 0) {
             const potentialTitle  = line.slice(0, idx).trim();
